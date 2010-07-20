@@ -56,7 +56,7 @@
             ed.addButton( 'embed', {
                 title : 'embed.desc',
                 cmd : 'enonicEmbed',
-                image : url + '/img/tag.gif'
+                image : url + '/img/embed.gif'
             } );
 
             ed.onNodeChange.add( function( ed, cm, n )
