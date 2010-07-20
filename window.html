@@ -1,0 +1,56 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>{#embed.title}</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+    <script type="text/javascript" src="../../tiny_mce_popup.js">//</script>
+    <script type="text/javascript" src="../../utils/mctabs.js">//</script>
+    <script type="text/javascript" src="../../utils/form_utils.js">//</script>
+    <script type="text/javascript" src="js/embed_dialog.js">//</script>
+    <link href="css/embed_dialog.css" rel="stylesheet" type="text/css"/>
+
+    <base target="_self"/>
+</head>
+<body onload="init();document.body.style.display='';" style="display: none">
+
+<div class="title">{#embed.title}</div>
+<form name="iframe" action="#">
+    <div class="panel_wrapper">
+        <!-- iframe panel -->
+        <div id="iframe_panel" class="panel current">
+            <table border="0" cellpadding="4" cellspacing="0" style="width:100%">
+                <tr>
+                    <td>
+                        <fieldset>
+                            <legend>{#embed.source}</legend>
+                            <textarea name="source" id="source" rows="8" cols="60"></textarea>
+                        </fieldset>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <fieldset>
+                            <legend>{#embed.preview}</legend>
+                            <div id="btn-preview-container">
+                                <input type="button" value="{#embed.btn_update}" class="button" onclick="updatePreview()">
+                            </div>
+                            <div id="preview"><!-- Preview --></div>
+                        </fieldset>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="mceActionPanel">
+        <div style="float: left">
+            <input type="button" id="insert" name="insert" value="{#insert}" onclick="insertSource();"/>
+        </div>
+
+        <div style="float: right">
+            <input type="button" id="cancel" name="cancel" value="{#cancel}" onclick="tinyMCEPopup.close();"/>
+        </div>
+    </div>
+</form>
+</body>
+</html>
