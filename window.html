@@ -24,6 +24,8 @@
                         <fieldset>
                             <legend>{#embed.source}</legend>
                             <textarea name="source" id="source" rows="8" cols="60"></textarea>
+                            <br/>
+                            <span>({#embed.paste_your_embed_code_here})</span>
                         </fieldset>
                     </td>
                 </tr>
@@ -32,7 +34,7 @@
                         <fieldset>
                             <legend>{#embed.preview}</legend>
                             <div id="btn-preview-container">
-                                <input type="button" value="{#embed.btn_update}" class="button" onclick="updatePreview()">
+                                <input type="button" value="{#embed.btn_refresh}" class="button" style="float:none" onclick="updatePreview()">
                             </div>
                             <div id="preview"><!-- Preview --></div>
                         </fieldset>

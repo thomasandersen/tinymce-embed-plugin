@@ -1,5 +1,5 @@
 .panel_wrapper {border-top:1px solid #B8B8B8;}
-.panel_wrapper div.current { height:450px; }
+.panel_wrapper div.current { height:460px; }
 #btn-preview-container { margin: 5px 0 10px 0 }
 #preview, textarea#source { width: 554px }
-#preview { border:1px solid #B8B8B8; height:200px; overflow:auto; }
+#preview { border:1px solid #B8B8B8; height:220px; overflow:auto; }

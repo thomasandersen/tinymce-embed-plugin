@@ -46,7 +46,7 @@
                 ed.windowManager.open( {
                     file : url + '/window.html',
                     width : 620 + ed.getLang( 'embed.delta_width', 0 ),
-                    height : 520 + ed.getLang( 'embed.delta_height', 0 ),
+                    height : 540 + ed.getLang( 'embed.delta_height', 0 ),
                     inline : 1
                 }, {
                     plugin_url : url
