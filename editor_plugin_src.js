@@ -16,22 +16,22 @@
 {
     tinymce.PluginManager.requireLangPack( 'embed' );
 
-    var iframePattern = /(<iframe\s.+?>)(|.+?)(<\/iframe>)/gi;
-    var iframeReplacePattern = '$1{iframe_element_content}$3';
-    var imagePlaceholderPattern = /^(mceItemIframe|mceItemFlash|mceItemShockWave|mceItemWindowsMedia|mceItemQuickTime|mceItemRealMedia)$/;
-
     tinymce.create( 'tinymce.plugins.embed', {
         init : function( ed, url )
         {
             var t = this;
 
-            function isImagePlaceholder( n )
+            function isNodePlaceholder( n )
             {
-                return imagePlaceholderPattern.test(n.className);
+                return t.imagePlaceholderPattern.test(n.className);
             }
 
             t.url = url;
             t.editor = ed;
+            t.iframeContent = 'Default content';
+            t.iframePattern = /(<iframe\s.+?>)(|.+?)(<\/iframe>)/gi;
+            t.iframeReplacePattern = '$1'+t.getIframeContent()+'$3';
+            t.imagePlaceholderPattern = /^(mceItemIframe|mceItemFlash|mceItemShockWave|mceItemWindowsMedia|mceItemQuickTime|mceItemRealMedia)$/;
 
             ed.onInit.add( function()
             {
@@ -61,7 +61,7 @@
 
             ed.onNodeChange.add( function( ed, cm, n )
             {
-                cm.setActive( 'embed', isImagePlaceholder( n ) );
+                cm.setActive( 'embed', isNodePlaceholder( n ) );
             } );
 
             ed.onGetContent.add(function(ed, o)
@@ -98,7 +98,7 @@
                 version   : "1.0"
             };
         },
-
+        
         imagesToIframes : function( o )
         {
             var t = this, editor = t.editor, dom = editor.dom, iframe;
@@ -128,6 +128,14 @@
         {
             var t = this, editor = t.editor, dom = editor.dom;
             var attribsForIframe = t._parseImagePlaceHolderTitle( imagePlaceHolder );
+            var iframeContent = '';
+
+            if ( 'content' in attribsForIframe )
+            {
+                iframeContent = attribsForIframe.content;
+                t.setIframeContent(iframeContent);
+                delete attribsForIframe.content; 
+            }
 
             var width = dom.getAttrib( imagePlaceHolder, 'width' );
             var height = dom.getAttrib( imagePlaceHolder, 'height' );
@@ -166,8 +174,23 @@
 
         addContentToIframes : function( content )
         {
-            return content.replace( iframePattern, iframeReplacePattern );
+            var t = this;
+            return content.replace( t.iframePattern, t.iframeReplacePattern );
         },
+
+        setIframeContent : function( content )
+        {
+            var t = this;
+            if ( content !== '' ) t.iframeContent = content;
+        },
+
+        getIframeContent : function( content )
+        {
+            var t = this;
+            return t.iframeContent;
+        },
+
+
 
         _parseImagePlaceHolderTitle : function( imagePlaceHolder )
         {
@@ -194,6 +217,14 @@
                     attribsForPlaceHolder[validAttrib] = iframeAttrib;
                 }
             }
+
+            // Set content for Iframe
+            // <iframe width="425" height="350" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="http://maps.google.com/?ie=UTF8&amp;t=h&amp;ll=37.0625,-95.677068&amp;spn=24.455808,37.353516&amp;z=4&amp;output=embed"><p>Hello, from Iframe</p></iframe>
+
+            attribsForPlaceHolder['content'] = t.getIframeContent();
+            t.setIframeContent(attribsForPlaceHolder.content);
+            alert(t.getIframeContent());
+
 
             return tinymce.util.JSON.serialize(attribsForPlaceHolder).replace(/[{}]/g, '');
         }

@@ -56,6 +56,10 @@ function insertSource()
                 selection.select( bogus );
             }
 
+            var iframeContent = source.replace(/(<iframe.+?>)(.+?)(<\/iframe>)/gi, '$2');
+
+            tinyMCEPopup.editor.plugins.embed.setIframeContent( iframeContent );
+
             tinyMCE.execCommand('mceInsertRawHTML',false, source);
 
             tinyMCEPopup.editor.execCommand( 'mceRepaint' );
