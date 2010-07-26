@@ -6,8 +6,6 @@
  *
  * Icon: Mark James, http://www.famfamfam.com/lab/icons/silk/ (CC 2.5)
  *
- * TODO: If an Iframe is 100%, IE will not render the width correct (only when opening the content for editing).
- * TODO: Try to avoid replacing iframe element contents.
  * TODO: Plugin parameters (iframe content).
  * TODO: Package.
  */
@@ -16,22 +14,20 @@
 {
     tinymce.PluginManager.requireLangPack( 'embed' );
 
+    var imagePlaceHolderPattern = /^(mceItemIframe|mceItemFlash|mceItemShockWave|mceItemWindowsMedia|mceItemQuickTime|mceItemRealMedia)$/;
+
     tinymce.create( 'tinymce.plugins.embed', {
         init : function( ed, url )
         {
             var t = this;
 
-            function isNodePlaceholder( n )
+            function isImagePlaceholder( n )
             {
-                return t.imagePlaceholderPattern.test(n.className);
+                return imagePlaceHolderPattern.test(n.className);
             }
 
             t.url = url;
             t.editor = ed;
-            t.iframeContent = 'Default content';
-            t.iframePattern = /(<iframe\s.+?>)(|.+?)(<\/iframe>)/gi;
-            t.iframeReplacePattern = '$1'+t.getIframeContent()+'$3';
-            t.imagePlaceholderPattern = /^(mceItemIframe|mceItemFlash|mceItemShockWave|mceItemWindowsMedia|mceItemQuickTime|mceItemRealMedia)$/;
 
             ed.onInit.add( function()
             {
@@ -61,18 +57,8 @@
 
             ed.onNodeChange.add( function( ed, cm, n )
             {
-                cm.setActive( 'embed', isNodePlaceholder( n ) );
+                cm.setActive( 'embed', isImagePlaceholder( n ) );
             } );
-
-            ed.onGetContent.add(function(ed, o)
-            {
-                o.content = t.addContentToIframes( o.content );
-            });
-
-            ed.onSaveContent.add( function( ed, o )
-            {
-                o.content = t.addContentToIframes( o.content );
-            });
 
             ed.onSetContent.add( function( ed, o )
             {
@@ -83,10 +69,20 @@
             {
                 if ( o.get )
                 {
-                    t.imagesToIframes( o )
+                    t.imagesToIframes( o );
                 }
             } );
+
+            ed.onPostProcess.add( function( ed, o )
+            {
+                // '$1$3$2$4'
+                o.content = o.content.replace(/(<iframe.+?)_iframe_innerhtml="(.+?)"(.+?)(<\/iframe>)/gi, function() {
+                    return arguments[1] + arguments[3] + t.editor.dom.decode(arguments[2]) + arguments[4];
+                });    
+                
+            } );
         },
+
 
         getInfo : function()
         {
@@ -98,7 +94,8 @@
                 version   : "1.0"
             };
         },
-        
+     
+
         imagesToIframes : function( o )
         {
             var t = this, editor = t.editor, dom = editor.dom, iframe;
@@ -111,6 +108,7 @@
             } );
         },
 
+
         iframesToImages: function( o )
         {
             var t = this, editor = t.editor, dom = editor.dom, imagePlaceHolder;
@@ -118,23 +116,25 @@
 
             tinymce.each( iframes, function( iframe )
             {
-                imagePlaceHolder = t.createImagePlaceHolder( iframe );
+                imagePlaceHolder = t.createImagePlaceHolder( iframe, o );
 
                 dom.replace( imagePlaceHolder, iframe );
             } );
         },
 
+
         createIframeElement : function( imagePlaceHolder )
         {
             var t = this, editor = t.editor, dom = editor.dom;
             var attribsForIframe = t._parseImagePlaceHolderTitle( imagePlaceHolder );
-            var iframeContent = '';
+            var innerHTML = '';
+                                             //window.console.log(imagePlaceHolder.title);
+            // TODO: Bug, attribsForIframe is null (open, view source, update, view source).
 
-            if ( 'content' in attribsForIframe )
+            if ( 'innerhtml' in attribsForIframe )
             {
-                iframeContent = attribsForIframe.content;
-                t.setIframeContent(iframeContent);
-                delete attribsForIframe.content; 
+                innerHTML = attribsForIframe.innerhtml;
+                delete attribsForIframe.innerhtml;
             }
 
             var width = dom.getAttrib( imagePlaceHolder, 'width' );
@@ -145,17 +145,37 @@
             dom.setAttrib( iframe, 'width', width );
             dom.setAttrib( iframe, 'height', height );
 
+            dom.setAttrib( iframe, '_iframe_innerhtml', innerHTML );
+
             return iframe;
         },
 
-        createImagePlaceHolder : function( iframe )
+
+        createImagePlaceHolder : function( iframe, o )
         {
             var t = this, editor = t.editor, dom = editor.dom;
-            var image, title, width, height;
+            var image, title, width, height, iframeInnerHTMLAttrib, iframeInnerHTML;
 
             width = dom.getAttrib( iframe, 'width' );
             height = dom.getAttrib( iframe, 'height' );
             title = t._serializeIframeAttributes( iframe );
+
+            iframeInnerHTMLAttrib = dom.getAttrib(iframe , '_iframe_innerhtml');
+
+            iframeInnerHTML = ( iframeInnerHTMLAttrib !== '' ) ? iframeInnerHTMLAttrib : dom.decode(iframe.innerHTML); // Firefox HTML encodes the iframes innerHTML.
+
+            if (!o.initial)
+            {
+                iframeInnerHTML = dom.decode(iframeInnerHTML);
+            }
+
+            if ( iframeInnerHTML === '' || /^\s*$/.test(iframeInnerHTML) )
+            {
+                
+                iframeInnerHTML = 'This browser does not support the iframe element.';
+            }
+
+            title += ',"innerhtml":"'+tinymce.trim(iframeInnerHTML)+'"';
 
             image = dom.create( 'img' );
 
@@ -172,25 +192,6 @@
             return image;
         },
 
-        addContentToIframes : function( content )
-        {
-            var t = this;
-            return content.replace( t.iframePattern, t.iframeReplacePattern );
-        },
-
-        setIframeContent : function( content )
-        {
-            var t = this;
-            if ( content !== '' ) t.iframeContent = content;
-        },
-
-        getIframeContent : function( content )
-        {
-            var t = this;
-            return t.iframeContent;
-        },
-
-
 
         _parseImagePlaceHolderTitle : function( imagePlaceHolder )
         {
@@ -199,6 +200,7 @@
 
             return tinymce.util.JSON.parse('{' + shimTitle + '}');
         },
+
 
         _serializeIframeAttributes : function( iframe )
         {
@@ -217,14 +219,6 @@
                     attribsForPlaceHolder[validAttrib] = iframeAttrib;
                 }
             }
-
-            // Set content for Iframe
-            // <iframe width="425" height="350" frameborder="0" scrolling="no" marginheight="0" marginwidth="0" src="http://maps.google.com/?ie=UTF8&amp;t=h&amp;ll=37.0625,-95.677068&amp;spn=24.455808,37.353516&amp;z=4&amp;output=embed"><p>Hello, from Iframe</p></iframe>
-
-            attribsForPlaceHolder['content'] = t.getIframeContent();
-            t.setIframeContent(attribsForPlaceHolder.content);
-            alert(t.getIframeContent());
-
 
             return tinymce.util.JSON.serialize(attribsForPlaceHolder).replace(/[{}]/g, '');
         }

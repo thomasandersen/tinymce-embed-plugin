@@ -29,7 +29,14 @@ function init()
 
     html = transformPlaceholderElem( selectedNode );
 
-    g_textarea.value = g_editor.serializer.serialize(html);
+    var iframeInnerHTML = g_editor.dom.getAttrib(html, '_iframe_innerhtml');
+    g_editor.dom.setAttrib(html, '_iframe_innerhtml', '');
+
+    html = g_editor.serializer.serialize(html);
+
+    html = html.replace(/(<iframe\s.+?>)(|.+?)(<\/iframe>)/gi, '$1'+iframeInnerHTML+'$3');
+
+    g_textarea.value = html;
 
     updatePreview();
 }
@@ -55,10 +62,6 @@ function insertSource()
 
                 selection.select( bogus );
             }
-
-            var iframeContent = source.replace(/(<iframe.+?>)(.+?)(<\/iframe>)/gi, '$2');
-
-            tinyMCEPopup.editor.plugins.embed.setIframeContent( iframeContent );
 
             tinyMCE.execCommand('mceInsertRawHTML',false, source);
 
