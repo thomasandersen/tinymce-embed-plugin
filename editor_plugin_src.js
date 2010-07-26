@@ -6,7 +6,6 @@
  *
  * Icon: Mark James, http://www.famfamfam.com/lab/icons/silk/ (CC 2.5)
  *
- * TODO: Plugin parameters (iframe content).
  * TODO: Check if it is it possible to extend valid elements from plug-in.
  * TODO: Package.
  */
@@ -22,7 +21,7 @@
         {
             var t = this;
 
-            function isImagePlaceholder( n )
+            function isImagePlaceHolder( n )
             {
                 return imagePlaceHolderPattern.test(n.className);
             }
@@ -30,6 +29,11 @@
             t.url = url;
             t.editor = ed;
             t.embed_iframe_innerhtml_fallback = ( ed.settings.embed_iframe_innerhtml_fallback ) ? ed.settings.embed_iframe_innerhtml_fallback : 'This browser does not support the iframe element.';
+
+            ed.onPreInit.add(function() {
+                // Force in _iframe_innerhtml parameter this extra parameter is a workaround since it seems impossible to set the iframe innerHTML property.
+                ed.serializer.addRules('iframe[_iframe_innerhtml|align<bottom?left?middle?right?top|class|frameborder|height|id|longdesc|marginheight|marginwidth|name|scrolling<auto?no?yes|src|style|title|width]');
+            });
 
             ed.onInit.add( function()
             {
@@ -59,7 +63,7 @@
 
             ed.onNodeChange.add( function( ed, cm, n )
             {
-                cm.setActive( 'embed', isImagePlaceholder( n ) );
+                cm.setActive( 'embed', isImagePlaceHolder( n ) );
             } );
 
             ed.onSetContent.add( function( ed, o )
@@ -171,7 +175,6 @@
 
             if ( iframeInnerHTML === '' || /^\s*$/.test(iframeInnerHTML) )
             {
-                
                 iframeInnerHTML = t.embed_iframe_innerhtml_fallback;
             }
 
