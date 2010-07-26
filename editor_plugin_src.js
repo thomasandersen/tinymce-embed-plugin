@@ -6,8 +6,10 @@
  *
  * Icon: Mark James, http://www.famfamfam.com/lab/icons/silk/ (CC 2.5)
  *
- * TODO: Check if it is it possible to extend valid elements from plug-in.
  * TODO: Package.
+ * TODO: IE: Tags in iframe.innerhtml must be lowercased.
+ * TODO: WebKit: Button is not activated when selecting the iframe placeholder.
+ * TODO: Opera: It is not possible to press the insert button if an iframe is created.
  */
 
 (function()
@@ -66,13 +68,24 @@
                 cm.setActive( 'embed', isImagePlaceHolder( n ) );
             } );
 
+            ed.onBeforeSetContent.add( function( ed, o )
+            {
+                t.iframesToSpans( o );
+            });
+
             ed.onSetContent.add( function( ed, o )
             {
-                t.iframesToImages( o )
+                t.spansToImages( o.node )
             } );
 
             ed.onPreProcess.add( function( ed, o )
             {
+                if ( o.set )
+                {
+                    t.iframesToSpans( o );
+                    t.spansToImages( o.node );
+                }
+
                 if ( o.get )
                 {
                     t.imagesToIframes( o );
@@ -81,11 +94,14 @@
 
             ed.onPostProcess.add( function( ed, o )
             {
-                // '$1$3$2$4'
-                o.content = o.content.replace(/(<iframe.+?)_iframe_innerhtml="(.+?)"(.+?)(<\/iframe>)/gi, function() {
-                    return arguments[1] + arguments[3] + t.editor.dom.decode(arguments[2]) + arguments[4];
-                });    
-                
+                if ( o.get )
+                {
+                    // Ugly, but it works.
+                    // '$1$3$2$4'
+                    o.content = o.content.replace(/(<iframe.+?)_iframe_innerhtml="(.+?)"(.+?)(<\/iframe>)/gi, function() {
+                        return arguments[1] + tinymce.trim(arguments[3]) + t.editor.dom.decode(arguments[2]) + arguments[4];
+                    });
+                }
             } );
         },
 
@@ -100,7 +116,60 @@
                 version   : "1.0"
             };
         },
-     
+
+        iframesToSpans : function( o )
+        {
+            o.content = o.content.replace(/<iframe\s*(.*?)>(|[\s\S]+?)<\/iframe>/gim, '<span $1 _class="mceItemIframe">$2</span>');
+        },
+
+        spansToImages: function( node )
+        {
+            var t = this, editor = t.editor, dom = editor.dom, imagePlaceHolder;
+            var spans = dom.select( 'span[_class="mceItemIframe"]', node );
+
+            tinymce.each( spans, function( span )
+            {
+                imagePlaceHolder = t.createImagePlaceHolder( span );
+
+                dom.replace( imagePlaceHolder, span );
+            } );
+        },
+
+
+        createImagePlaceHolder : function( span )
+        {
+            var t = this, editor = t.editor, dom = editor.dom;
+            var image, title, width, height, iframeInnerHTMLAttrib, iframeInnerHTML;
+
+            width = dom.getAttrib( span, 'width' );
+            height = dom.getAttrib( span, 'height' );
+            title = t._serializeIframeAttributes( span );
+
+            iframeInnerHTML = span.innerHTML.replace(/^\s+|\s+$/g, '');
+
+            iframeInnerHTML = iframeInnerHTML !== '' ? iframeInnerHTML : t.embed_iframe_innerhtml_fallback;
+
+            // Lowercase tag content for IE.
+            iframeInnerHTML = iframeInnerHTML.replace(/<(.+?)>/gim, function () {
+                return '<'+arguments[1].toLowerCase()+'>';
+            });
+
+            title += ',"innerhtml":"'+iframeInnerHTML+'"';
+
+            image = dom.create( 'img' );
+
+            dom.setAttrib( image, 'src', t.url + '/img/trans.gif' );
+            dom.setAttrib( image, 'title', title );
+            dom.setAttrib( image, 'width', width );
+            dom.setAttrib( image, 'height', height );
+            dom.addClass( image, 'mceItemIframe' );
+
+            // For some reason IE will not set the img.width attribute if the image is not fully loaded(onload).
+            dom.setStyle( image, 'width', width );
+            dom.setAttrib( image, 'style', 0 );
+
+            return image;
+        },
 
         imagesToIframes : function( o )
         {
@@ -113,21 +182,6 @@
                 dom.replace( iframe, img );
             } );
         },
-
-
-        iframesToImages: function( o )
-        {
-            var t = this, editor = t.editor, dom = editor.dom, imagePlaceHolder;
-            var iframes = dom.select( 'iframe', o.node );
-
-            tinymce.each( iframes, function( iframe )
-            {
-                imagePlaceHolder = t.createImagePlaceHolder( iframe, o );
-
-                dom.replace( imagePlaceHolder, iframe );
-            } );
-        },
-
 
         createIframeElement : function( imagePlaceHolder )
         {
@@ -153,48 +207,7 @@
 
             return iframe;
         },
-
-
-        createImagePlaceHolder : function( iframe, o )
-        {
-            var t = this, editor = t.editor, dom = editor.dom;
-            var image, title, width, height, iframeInnerHTMLAttrib, iframeInnerHTML;
-
-            width = dom.getAttrib( iframe, 'width' );
-            height = dom.getAttrib( iframe, 'height' );
-            title = t._serializeIframeAttributes( iframe );
-
-            iframeInnerHTMLAttrib = dom.getAttrib(iframe , '_iframe_innerhtml');
-
-            iframeInnerHTML = ( iframeInnerHTMLAttrib !== '' ) ? iframeInnerHTMLAttrib : dom.decode(iframe.innerHTML); // Firefox HTML encodes the iframes innerHTML.
-
-            if (!o.initial)
-            {
-                iframeInnerHTML = dom.decode(iframeInnerHTML);
-            }
-
-            if ( iframeInnerHTML === '' || /^\s*$/.test(iframeInnerHTML) )
-            {
-                iframeInnerHTML = t.embed_iframe_innerhtml_fallback;
-            }
-
-            title += ',"innerhtml":"'+tinymce.trim(iframeInnerHTML)+'"';
-
-            image = dom.create( 'img' );
-
-            dom.setAttrib( image, 'src', t.url + '/img/trans.gif' );
-            dom.setAttrib( image, 'title', title );
-            dom.setAttrib( image, 'width', width );
-            dom.setAttrib( image, 'height', height );
-            dom.addClass( image, 'mceItemIframe' );
-
-            // For some reason the img.width attribute in IE is not set if the image is not fully loaded.
-            dom.setStyle( image, 'width', width );
-            dom.setAttrib( image, 'style', 0 );
-
-            return image;
-        },
-
+   
 
         _parseImagePlaceHolderTitle : function( imagePlaceHolder )
         {
