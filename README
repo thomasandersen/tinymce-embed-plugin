@@ -11,4 +11,4 @@ Installation
 * Extract the zip to the TinyMCE plug-ins folder.
 * Add embed to the plug-ins configuration.
 * Add embed to the theme_advanced_buttons_n configuration.
-* Add "iframe[align<bottom?left?middle?right?top|class|frameborder|height|id|longdesc|marginheight|marginwidth|name|scrolling<auto?no?yes|src|style|title|width]" to the extended_valid_elements configuration.
+* Add "iframe[_iframe_innerhtml|align<bottom?left?middle?right?top|class|frameborder|height|id|longdesc|marginheight|marginwidth|name|scrolling<auto?no?yes|src|style|title|width]" to the extended_valid_elements configuration.
