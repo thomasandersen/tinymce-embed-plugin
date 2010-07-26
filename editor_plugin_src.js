@@ -7,6 +7,7 @@
  * Icon: Mark James, http://www.famfamfam.com/lab/icons/silk/ (CC 2.5)
  *
  * TODO: Plugin parameters (iframe content).
+ * TODO: Check if it is it possible to extend valid elements from plug-in.
  * TODO: Package.
  */
 
@@ -28,6 +29,7 @@
 
             t.url = url;
             t.editor = ed;
+            t.embed_iframe_innerhtml_fallback = ( ed.settings.embed_iframe_innerhtml_fallback ) ? ed.settings.embed_iframe_innerhtml_fallback : 'This browser does not support the iframe element.';
 
             ed.onInit.add( function()
             {
@@ -128,8 +130,6 @@
             var t = this, editor = t.editor, dom = editor.dom;
             var attribsForIframe = t._parseImagePlaceHolderTitle( imagePlaceHolder );
             var innerHTML = '';
-                                             //window.console.log(imagePlaceHolder.title);
-            // TODO: Bug, attribsForIframe is null (open, view source, update, view source).
 
             if ( 'innerhtml' in attribsForIframe )
             {
@@ -172,7 +172,7 @@
             if ( iframeInnerHTML === '' || /^\s*$/.test(iframeInnerHTML) )
             {
                 
-                iframeInnerHTML = 'This browser does not support the iframe element.';
+                iframeInnerHTML = t.embed_iframe_innerhtml_fallback;
             }
 
             title += ',"innerhtml":"'+tinymce.trim(iframeInnerHTML)+'"';
