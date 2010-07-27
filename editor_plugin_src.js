@@ -7,8 +7,6 @@
  * Icon: Mark James, http://www.famfamfam.com/lab/icons/silk/ (CC 2.5)
  *
  * TODO: Package.
- * TODO: IE: Tags in iframe.innerhtml must be lowercased.
- * TODO: WebKit: Button is not activated when selecting the iframe placeholder.
  * TODO: Opera: It is not possible to press the insert button if an iframe is created.
  */
 

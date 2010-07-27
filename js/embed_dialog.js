@@ -13,7 +13,7 @@ function init()
     g_previewContainer = document.getElementById('preview');
 
     var selectedNode = g_editor.selection.getNode();
-    var html;
+    var htmlFragment, iframeInnerHTML;
 
     var isPlaceholderElem = /^(mceItemIframe|mceItemFlash|mceItemShockWave|mceItemWindowsMedia|mceItemQuickTime|mceItemRealMedia)$/.test(selectedNode.className);
 
@@ -27,16 +27,17 @@ function init()
         g_update = true;
     }
 
-    html = transformPlaceholderElem( selectedNode );
+    htmlFragment = transformPlaceholderElem( selectedNode );
 
-    var iframeInnerHTML = g_editor.dom.getAttrib(html, '_iframe_innerhtml');
-    g_editor.dom.setAttrib(html, '_iframe_innerhtml', '');
+    iframeInnerHTML = g_editor.dom.getAttrib(htmlFragment, '_iframe_innerhtml');
 
-    html = g_editor.serializer.serialize(html);
+    g_editor.dom.setAttrib(htmlFragment, '_iframe_innerhtml', '');
 
-    html = html.replace(/(<iframe\s.+?>)(|.+?)(<\/iframe>)/gi, '$1'+iframeInnerHTML+'$3');
+    htmlFragment = g_editor.serializer.serialize(htmlFragment);
 
-    g_textarea.value = html;
+    htmlFragment = htmlFragment.replace(/(<iframe\s.+?>)(|.+?)(<\/iframe>)/gi, '$1'+iframeInnerHTML+'$3');
+
+    g_textarea.value = htmlFragment;
 
     updatePreview();
 }
@@ -78,9 +79,14 @@ function insertSource()
 
 function updatePreview()
 {
-    if ( isSourceValid() )
+    var previewIframe = g_previewContainer;
+
+    if (isSourceValid())
     {
-        g_previewContainer.innerHTML = g_textarea.value;
+        previewIframe = (previewIframe.contentWindow) ? previewIframe.contentWindow : (previewIframe.contentDocument.document) ? previewIframe.contentDocument.document : previewIframe.contentDocument;
+        previewIframe.document.open();
+        previewIframe.document.write(g_textarea.value);
+        previewIframe.document.close();
     }
     else
     {
