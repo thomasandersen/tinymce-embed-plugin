@@ -30,6 +30,7 @@ function init()
     htmlFragment = transformPlaceholderElem( selectedNode );
 
     iframeInnerHTML = g_editor.dom.getAttrib(htmlFragment, '_iframe_innerhtml');
+    iframeInnerHTML = g_editor.dom.decode(iframeInnerHTML);
 
     g_editor.dom.setAttrib(htmlFragment, '_iframe_innerhtml', '');
 
@@ -39,7 +40,10 @@ function init()
 
     g_textarea.value = htmlFragment;
 
-    updatePreview();
+    // Set time out since it seems Safari not always will update the preview on init.
+    setTimeout(function() {
+        updatePreview();
+    }, 30);
 }
 
 function insertSource()

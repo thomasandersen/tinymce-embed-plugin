@@ -6,7 +6,6 @@
  *
  * Icon: Mark James, http://www.famfamfam.com/lab/icons/silk/ (CC 2.5)
  *
- * TODO: WebKit. The iframe innerhtml is not set on init.
  * TODO: Package.
  */
 
@@ -73,7 +72,7 @@
 
             ed.onSetContent.add( function( ed, o )
             {
-                t.spansToImages( o.node )
+                t.spansToImages( o.node );
             } );
 
             ed.onPreProcess.add( function( ed, o )
@@ -94,10 +93,11 @@
             {
                 if ( o.get )
                 {
-                    // Ugly, but it works.
-                    // '$1$3$2$4'
+                    // A bit ugly, but it works.
                     o.content = o.content.replace(/(<iframe.+?)_iframe_innerhtml="(.+?)"(.+?)(<\/iframe>)/gi, function() {
-                        return arguments[1] + tinymce.trim(arguments[3]) + t.editor.dom.decode(arguments[2]) + arguments[4];
+                        var innerHTML = t.editor.dom.decode(arguments[2]).replace(/&lt;/gm, '<').replace(/&gt;/gm, '>');
+
+                        return arguments[1] + tinymce.trim(arguments[3]) + innerHTML + arguments[4];
                     });
                 }
             } );
@@ -111,14 +111,27 @@
                 author    : 'Thomas Andersen (thomas@mr-andersen.no)',
                 authorurl : 'http://www.mr-andersen.no.com',
                 infourl   : 'http://www.mr-andersen.no.com',
-                version   : "1.0"
+                version   : "0.1"
             };
         },
 
+        
         iframesToSpans : function( content )
         {
-            return content.replace(/<iframe\s*(.*?)>(|[\s\S]+?)<\/iframe>/gim, '<span $1 _class="mceItemIframe">$2</span>');
+            var t = this;
+            
+            return content.replace(/<iframe\s*(.*?)>(|[\s\S]+?)<\/iframe>/gim, function() {
+                var replacement = '<span ';
+                replacement += arguments[1];
+                replacement += ' _class="mceItemIframe">';
+                replacement += t.editor.dom.encode(arguments[2]);
+                //replacement += arguments[2].replace(/</gm, '&lt;').replace(/>/gm, '&gt;');
+                replacement += '</span>';
+
+                return replacement;
+            });
         },
+
 
         spansToImages: function( node )
         {
@@ -206,6 +219,13 @@
             return iframe;
         },
    
+        encodeBrackets : function() {
+
+        },
+
+        decodeBrackets : function() {
+            
+        },
 
         _parseImagePlaceHolderTitle : function( imagePlaceHolder )
         {
