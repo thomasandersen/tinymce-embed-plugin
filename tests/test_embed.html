@@ -1,0 +1,56 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Unit tests for the TinyMCE Embed Plug-in</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1"/>
+    <link rel="stylesheet" href="../../../../../tests/qunit/qunit.css" type="text/css" media="screen">
+    <script type="text/javascript" src="../../../../../tests/qunit/qunit.js"></script>
+    <script type="text/javascript" src="../../../../../tests/qunit/runner.js"></script>
+    <script type="text/javascript" src="../../../../../tests/../jscripts/tiny_mce/tiny_mce.js"></script>
+    <script type="text/javascript" src="test_embed.js"></script>
+    <script type="text/javascript">
+
+        function getBaseUrl()
+        {
+            var url = window.location.href;
+            var positionOfTinyMCE = url.lastIndexOf('tinymce');
+
+            return url.substring(0, positionOfTinyMCE);
+        }
+        tinyMCE.init({
+            mode : "exact",
+            elements : "elm1",
+            theme : "advanced",
+            add_unload_trigger : false,
+            apply_source_formatting : false,
+            document_base_url : getBaseUrl(),
+            plugins : 'safari,media,embed',
+
+            init_instance_callback : function(ed) {
+                editor = ed;
+                embed = ed.plugins.embed;
+                QUnit.start();
+            }
+        });
+
+    </script>
+</head>
+<body>
+<h1 id="qunit-header">Unit tests for the TinyMCE Embed Plug-in</h1>
+
+<h2 id="qunit-banner"></h2>
+
+<div id="qunit-testrunner-toolbar"></div>
+<h2 id="qunit-userAgent"></h2>
+<ol id="qunit-tests"></ol>
+
+<textarea id="elm1" name="elm1"></textarea>
+
+<div>
+    <a href="javascript:alert(tinymce.EditorManager.get('elm1').getContent({format : 'raw'}));">[getRawContents]</a>
+    <a href="javascript:alert(tinymce.EditorManager.get('elm1').getContent());">[getContents]</a>
+</div>
+
+</body>
+</html>

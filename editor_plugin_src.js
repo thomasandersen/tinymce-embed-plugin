@@ -6,8 +6,8 @@
  *
  * Icon: Mark James, http://www.famfamfam.com/lab/icons/silk/ (CC 2.5)
  *
+ * TODO: WebKit. The iframe innerhtml is not set on init.
  * TODO: Package.
- * TODO: Opera: It is not possible to press the insert button if an iframe is created.
  */
 
 (function()
@@ -32,7 +32,7 @@
 
             ed.onPreInit.add(function() {
                 // Force in _iframe_innerhtml parameter this extra parameter is a workaround since it seems impossible to set the iframe innerHTML property.
-                ed.serializer.addRules('iframe[_iframe_innerhtml|align<bottom?left?middle?right?top|class|frameborder|height|id|longdesc|marginheight|marginwidth|name|scrolling<auto?no?yes|src|style|title|width]');
+                ed.serializer.addRules('iframe[_iframe_innerhtml|align<bottom?left?middle?right?top|class|frameborder|height|id|longdesc|marginheight|marginwidth|name|scrolling<auto?no?yes|src|style|title|width|type]');
             });
 
             ed.onInit.add( function()
@@ -68,7 +68,7 @@
 
             ed.onBeforeSetContent.add( function( ed, o )
             {
-                t.iframesToSpans( o );
+                o.content = t.iframesToSpans( o.content );
             });
 
             ed.onSetContent.add( function( ed, o )
@@ -80,7 +80,7 @@
             {
                 if ( o.set )
                 {
-                    t.iframesToSpans( o );
+                    o.content = t.iframesToSpans( o.content );
                     t.spansToImages( o.node );
                 }
 
@@ -115,9 +115,9 @@
             };
         },
 
-        iframesToSpans : function( o )
+        iframesToSpans : function( content )
         {
-            o.content = o.content.replace(/<iframe\s*(.*?)>(|[\s\S]+?)<\/iframe>/gim, '<span $1 _class="mceItemIframe">$2</span>');
+            return content.replace(/<iframe\s*(.*?)>(|[\s\S]+?)<\/iframe>/gim, '<span $1 _class="mceItemIframe">$2</span>');
         },
 
         spansToImages: function( node )
@@ -186,7 +186,7 @@
             var t = this, editor = t.editor, dom = editor.dom;
             var attribsForIframe = t._parseImagePlaceHolderTitle( imagePlaceHolder );
             var innerHTML = '';
-
+            
             if ( 'innerhtml' in attribsForIframe )
             {
                 innerHTML = attribsForIframe.innerhtml;
@@ -219,13 +219,14 @@
         _serializeIframeAttributes : function( iframe )
         {
             var t = this, editor = t.editor, dom = editor.dom, iframeHasValidAttrib, validAttrib, iframeAttrib;
-            var xhtml1TransitionalAttribs = ['src', 'width', 'height', 'longdesc', 'name', 'frameborder', 'marginwidth', 'marginheight', 'scrolling', 'align', 'id', 'class', 'style', 'title'];
+            var xhtml1TransitionalAttribs = ['src', 'width', 'height', 'longdesc', 'name', 'frameborder', 'marginwidth', 'marginheight', 'scrolling', 'align', 'id', 'class', 'style', 'title', 'type'];
             var attribsForPlaceHolder = {};
 
             for ( var key in xhtml1TransitionalAttribs )
             {
                 validAttrib = xhtml1TransitionalAttribs[key];
                 iframeAttrib = dom.getAttrib( iframe, validAttrib );
+
                 iframeHasValidAttrib = iframeAttrib !== '';
 
                 if ( iframeHasValidAttrib )
