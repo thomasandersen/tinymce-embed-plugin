@@ -111,7 +111,7 @@
                 author    : 'Thomas Andersen (thomas@mr-andersen.no)',
                 authorurl : 'http://www.mr-andersen.no.com',
                 infourl   : 'http://www.mr-andersen.no.com',
-                version   : "0.1"
+                version   : "1.0"
             };
         },
 
