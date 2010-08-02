@@ -6,7 +6,6 @@
  *
  * Icon: Mark James, http://www.famfamfam.com/lab/icons/silk/ (CC 2.5)
  *
- * TODO: Package.
  */
 
 (function()
@@ -93,7 +92,6 @@
             {
                 if ( o.get )
                 {
-                    // A bit ugly, but it works.
                     o.content = o.content.replace(/(<iframe.+?)_iframe_innerhtml="(.+?)"(.+?)(<\/iframe>)/gi, function() {
                         var innerHTML = t.editor.dom.decode(arguments[2]).replace(/&lt;/gm, '<').replace(/&gt;/gm, '>');
 
@@ -107,11 +105,11 @@
         getInfo : function()
         {
             return {
-                longname  : 'Embed',
-                author    : 'Thomas Andersen (thomas@mr-andersen.no)',
-                authorurl : 'http://www.mr-andersen.no.com',
-                infourl   : 'http://www.mr-andersen.no.com',
-                version   : "1.0"
+                longname  : 'Embed Plug-in',
+                author    : 'tan@enonic.com',
+                authorurl : 'http://www.enonic.com',
+                infourl   : 'http://www.enonic.com',
+                version   : "1.1"
             };
         },
 
@@ -122,6 +120,7 @@
             
             return content.replace(/<iframe\s*(.*?)>(|[\s\S]+?)<\/iframe>/gim, function() {
                 var replacement = '<span ';
+
                 replacement += arguments[1];
                 replacement += ' _class="mceItemIframe">';
                 replacement += t.editor.dom.encode(arguments[2]);
@@ -182,6 +181,7 @@
             return image;
         },
 
+
         imagesToIframes : function( o )
         {
             var t = this, editor = t.editor, dom = editor.dom, iframe;
@@ -194,11 +194,12 @@
             } );
         },
 
+
         createIframeElement : function( imagePlaceHolder )
         {
             var t = this, editor = t.editor, dom = editor.dom;
             var attribsForIframe = t._parseImagePlaceHolderTitle( imagePlaceHolder );
-            var innerHTML = '';
+            var innerHTML = '', iframe, width, height;
             
             if ( 'innerhtml' in attribsForIframe )
             {
@@ -206,10 +207,10 @@
                 delete attribsForIframe.innerhtml;
             }
 
-            var width = dom.getAttrib( imagePlaceHolder, 'width' );
-            var height = dom.getAttrib( imagePlaceHolder, 'height' );
+            width = dom.getAttrib( imagePlaceHolder, 'width' );
+            height = dom.getAttrib( imagePlaceHolder, 'height' );
 
-            var iframe = dom.create( 'iframe', attribsForIframe );
+            iframe = dom.create( 'iframe', attribsForIframe );
 
             dom.setAttrib( iframe, 'width', width );
             dom.setAttrib( iframe, 'height', height );
@@ -218,14 +219,7 @@
 
             return iframe;
         },
-   
-        encodeBrackets : function() {
 
-        },
-
-        decodeBrackets : function() {
-            
-        },
 
         _parseImagePlaceHolderTitle : function( imagePlaceHolder )
         {
