@@ -29,7 +29,6 @@
             t.embed_iframe_innerhtml_fallback = ( ed.settings.embed_iframe_innerhtml_fallback ) ? ed.settings.embed_iframe_innerhtml_fallback : 'This browser does not support the iframe element.';
 
             ed.onPreInit.add(function() {
-                // Force in _iframe_innerhtml parameter this extra parameter is a workaround since it seems impossible to set the iframe innerHTML property.
                 ed.serializer.addRules('iframe[_iframe_innerhtml|align<bottom?left?middle?right?top|class|frameborder|height|id|longdesc|marginheight|marginwidth|name|scrolling<auto?no?yes|src|style|title|width|type]');
             });
 
@@ -124,7 +123,6 @@
                 replacement += arguments[1];
                 replacement += ' _class="mceItemIframe">';
                 replacement += t.editor.dom.encode(arguments[2]);
-                //replacement += arguments[2].replace(/</gm, '&lt;').replace(/>/gm, '&gt;');
                 replacement += '</span>';
 
                 return replacement;
@@ -134,7 +132,11 @@
 
         spansToImages: function( node )
         {
-            var t = this, editor = t.editor, dom = editor.dom, imagePlaceHolder;
+            var t = this,
+                    editor = t.editor,
+                    dom = editor.dom,
+                    imagePlaceHolder;
+
             var spans = dom.select( 'span[_class="mceItemIframe"]', node );
 
             tinymce.each( spans, function( span )
@@ -148,8 +150,15 @@
 
         createImagePlaceHolder : function( span )
         {
-            var t = this, editor = t.editor, dom = editor.dom;
-            var image, title, width, height, iframeInnerHTMLAttrib, iframeInnerHTML;
+            var t = this,
+                    editor = t.editor,
+                    dom = editor.dom,
+                    image,
+                    title,
+                    width,
+                    height,
+                    iframeInnerHTMLAttrib,
+                    iframeInnerHTML;
 
             width = dom.getAttrib( span, 'width' );
             height = dom.getAttrib( span, 'height' );
@@ -159,7 +168,7 @@
 
             iframeInnerHTML = iframeInnerHTML !== '' ? iframeInnerHTML : t.embed_iframe_innerhtml_fallback;
 
-            // Lowercase tag content for IE.
+            // Lowercase tags for IE.
             iframeInnerHTML = iframeInnerHTML.replace(/<(.+?)>/gim, function () {
                 return '<'+arguments[1].toLowerCase()+'>';
             });
@@ -184,7 +193,11 @@
 
         imagesToIframes : function( o )
         {
-            var t = this, editor = t.editor, dom = editor.dom, iframe;
+            var t = this,
+                    editor = t.editor,
+                    dom = editor.dom,
+                    iframe;
+
             var imagePlaceHolders = dom.select( 'img[class="mceItemIframe"]', o.node );
 
             tinymce.each( imagePlaceHolders, function( img )
@@ -197,9 +210,15 @@
 
         createIframeElement : function( imagePlaceHolder )
         {
-            var t = this, editor = t.editor, dom = editor.dom;
+            var t = this,
+                    editor = t.editor,
+                    dom = editor.dom,
+                    innerHTML = '',
+                    iframe,
+                    width,
+                    height;
+
             var attribsForIframe = t._parseImagePlaceHolderTitle( imagePlaceHolder );
-            var innerHTML = '', iframe, width, height;
             
             if ( 'innerhtml' in attribsForIframe )
             {
@@ -209,12 +228,10 @@
 
             width = dom.getAttrib( imagePlaceHolder, 'width' );
             height = dom.getAttrib( imagePlaceHolder, 'height' );
-
             iframe = dom.create( 'iframe', attribsForIframe );
 
             dom.setAttrib( iframe, 'width', width );
             dom.setAttrib( iframe, 'height', height );
-
             dom.setAttrib( iframe, '_iframe_innerhtml', innerHTML );
 
             return iframe;
@@ -223,18 +240,25 @@
 
         _parseImagePlaceHolderTitle : function( imagePlaceHolder )
         {
-            var t = this, editor = t.editor;
-            var shimTitle = editor.dom.getAttrib( imagePlaceHolder, 'title' );
+            var t = this,
+                    editor = t.editor,
+                    placeHolderTitle = editor.dom.getAttrib( imagePlaceHolder, 'title' );
 
-            return tinymce.util.JSON.parse('{' + shimTitle + '}');
+            return tinymce.util.JSON.parse('{' + placeHolderTitle + '}');
         },
 
 
         _serializeIframeAttributes : function( iframe )
         {
-            var t = this, editor = t.editor, dom = editor.dom, iframeHasValidAttrib, validAttrib, iframeAttrib;
+            var t = this,
+                    editor = t.editor,
+                    dom = editor.dom,
+                    iframeHasValidAttrib,
+                    validAttrib,
+                    iframeAttrib,
+                    attribsForPlaceHolder = {};
+
             var xhtml1TransitionalAttribs = ['src', 'width', 'height', 'longdesc', 'name', 'frameborder', 'marginwidth', 'marginheight', 'scrolling', 'align', 'id', 'class', 'style', 'title', 'type'];
-            var attribsForPlaceHolder = {};
 
             for ( var key in xhtml1TransitionalAttribs )
             {
