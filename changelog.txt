@@ -1,5 +1,5 @@
 Version 1.1
-    -
+    - Dialog insert button value is changed to update if an embedded element is selected
 
 Version 1.0
     - Initial release

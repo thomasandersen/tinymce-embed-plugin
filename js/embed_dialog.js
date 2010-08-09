@@ -2,6 +2,8 @@ var g_editor;
 var g_textarea, g_previewContainer;
 var g_update = false;
 
+var pathToCodeMirror = '../../../../examples/CodeMirror-0.8/';
+
 function init()
 {
     tinyMCEPopup.restoreSelection();
@@ -25,6 +27,8 @@ function init()
     if ( isPlaceholderElem )
     {
         g_update = true;
+
+        document.getElementById('insert').value = g_editor.getLang('embed.btn_update');        
     }
 
     htmlFragment = transformPlaceholderElem( selectedNode );
@@ -40,10 +44,22 @@ function init()
 
     g_textarea.value = htmlFragment;
 
+    /*
+    var codemirror = CodeMirror.fromTextArea('source', {
+        parserfile: ["parsexml.js", "parsecss.js", "tokenizejavascript.js", "parsejavascript.js", "parsehtmlmixed.js"],
+        stylesheet: ["" + pathToCodeMirror + "css/xmlcolors.css", ""+pathToCodeMirror+"css/jscolors.css", ""+pathToCodeMirror+"css/csscolors.css"],
+        path: pathToCodeMirror + "js/",
+        tabMode: "indent",
+        reindentOnLoad: true
+    });
+    */
+
+
     // Set time out since it seems Safari not always will update the preview on init.
     setTimeout(function() {
         updatePreview();
     }, 30);
+
 }
 
 function insertSource()

@@ -148,6 +148,23 @@
         },
 
 
+        imagesToIframes : function( o )
+        {
+            var t = this,
+                    editor = t.editor,
+                    dom = editor.dom,
+                    iframe;
+
+            var imagePlaceHolders = dom.select( 'img[class="mceItemIframe"]', o.node );
+
+            tinymce.each( imagePlaceHolders, function( img )
+            {
+                iframe = t.createIframeElement( img );
+                dom.replace( iframe, img );
+            } );
+        },
+
+
         createImagePlaceHolder : function( span )
         {
             var t = this,
@@ -190,24 +207,7 @@
             return image;
         },
 
-
-        imagesToIframes : function( o )
-        {
-            var t = this,
-                    editor = t.editor,
-                    dom = editor.dom,
-                    iframe;
-
-            var imagePlaceHolders = dom.select( 'img[class="mceItemIframe"]', o.node );
-
-            tinymce.each( imagePlaceHolders, function( img )
-            {
-                iframe = t.createIframeElement( img );
-                dom.replace( iframe, img );
-            } );
-        },
-
-
+        
         createIframeElement : function( imagePlaceHolder )
         {
             var t = this,
